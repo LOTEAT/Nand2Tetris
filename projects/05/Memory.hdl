@@ -21,11 +21,21 @@
  * memory map. The behavior in these addresses is described in the 
  * Screen and Keyboard chip specifications given in the book.
  */
-
+// 1K = 0x400 8K = 0x2000 16K = 0x4000 24K=0x6000
+// 2^14 = 0x4000 2^15 = 0x8000 2^14 + 2^13 = 0x6000
 CHIP Memory {
     IN in[16], load, address[15];
     OUT out[16];
 
     PARTS:
     // Put your code here:
+
+    DMux(in=load, sel=address[14], a=l1, b=l2);
+    RAM16K(in=in, load=l1, address=address[0..13], out=memoryOut);
+    DMux(in=l2, sel=address[13], a=l3, b=l4);
+    Screen(in=in, load=l3, address=address[0..12], out=screenOut);
+	Keyboard(out = keyboardOut);
+    Mux16(a=screenOut, b=keyboardOut, sel=address[13], out=hardwareOut);
+    Mux16(a=memoryOut, b=hardwareOut, sel=address[14], out=out);
+
 }
